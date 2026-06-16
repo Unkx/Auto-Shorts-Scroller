@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8" />
+  <title>AutoScroller</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 300px;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0c0c12;
+      color: #e2e2f0;
+      user-select: none;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .header {
+      position: relative;
+      padding: 18px 16px 14px;
+      background: linear-gradient(135deg, #1a1030 0%, #120e24 100%);
+      border-bottom: 1px solid #ffffff0d;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-icon {
+      width: 38px; height: 38px; flex-shrink: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px #7c3aed55;
+    }
+
+    .header-icon svg { width: 20px; height: 20px; }
+
+    .header-text h1 {
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.2px;
+      background: linear-gradient(90deg, #c4b5fd, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-text p {
+      font-size: 10px; color: #6b6b8a; margin-top: 1px; letter-spacing: 0.4px;
+    }
+
+    /* version chip */
+    .header::after {
+      content: 'v1.0';
+      position: absolute; top: 10px; right: 12px;
+      font-size: 9px; color: #3d3d5c;
+      letter-spacing: 0.5px;
+    }
+
+    /* ── Body ── */
+    .body { padding: 14px 14px 10px; }
+
+    /* ── Power row ── */
+    .power-row {
+      display: flex; align-items: center; justify-content: space-between;
+      background: #16161e;
+      border: 1px solid #ffffff08;
+      border-radius: 14px;
+      padding: 13px 15px;
+      margin-bottom: 12px;
+      transition: border-color .2s;
+    }
+
+    .power-row.active {
+      border-color: #7c3aed44;
+      background: linear-gradient(135deg, #1a1030, #16161e);
+    }
+
+    .power-info .label { font-size: 13px; font-weight: 600; }
+    .power-info .sub   { font-size: 10px; color: #555570; margin-top: 2px; }
+
+    /* pill toggle */
+    .pill { position: relative; width: 46px; height: 26px; cursor: pointer; }
+    .pill input { opacity: 0; width: 0; height: 0; }
+
+    .pill-track {
+      position: absolute; inset: 0;
+      background: #2a2a3a; border-radius: 26px;
+      transition: background .25s;
+    }
+
+    .pill-thumb {
+      position: absolute;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: #fff; top: 3px; left: 3px;
+      transition: transform .25s, box-shadow .25s;
+      box-shadow: 0 1px 4px #0008;
+    }
+
+    .pill input:checked ~ .pill-track {
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    }
+    .pill input:checked ~ .pill-thumb {
+      transform: translateX(20px);
+      box-shadow: 0 1px 8px #7c3aed99;
+    }
+
+    /* ── Section label ── */
+    .label-row {
+      font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
+      color: #3d3d58; text-transform: uppercase;
+      margin-bottom: 7px; margin-top: 2px;
+    }
+
+    /* ── Mode cards ── */
+    .mode-group {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 6px; margin-bottom: 12px;
+    }
+
+    .mode-btn {
+      background: #16161e;
+      border: 1px solid #ffffff08;
+      border-radius: 10px;
+      padding: 9px 4px 8px;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 5px;
+      transition: all .15s;
+    }
+
+    .mode-btn .m-icon {
+      font-size: 16px; line-height: 1;
+    }
+
+    .mode-btn .m-label {
+      font-size: 10px; font-weight: 500;
+      color: #55557a; text-align: center; line-height: 1.3;
+    }
+
+    .mode-btn:hover { border-color: #7c3aed44; }
+
+    .mode-btn.active {
+      background: linear-gradient(135deg, #2d1f5e, #1e1b52);
+      border-color: #7c3aed;
+    }
+
+    .mode-btn.active .m-label { color: #c4b5fd; }
+
+    /* ── Slider ── */
+    .slider-card {
+      background: #16161e;
+      border: 1px solid #ffffff08;
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+
+    .slider-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .slider-header .s-label { font-size: 11px; color: #88889a; }
+
+    .slider-header .s-val {
+      font-size: 14px; font-weight: 700;
+      color: #a78bfa;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%; height: 3px;
+      background: #2a2a3a; border-radius: 3px; cursor: pointer;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px; border-radius: 50%;
+      background: linear-gradient(135deg, #7c3aed, #4f46e5);
+      box-shadow: 0 0 0 3px #7c3aed33;
+      cursor: pointer;
+      transition: box-shadow .15s;
+    }
+
+    input[type=range]:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 0 5px #7c3aed44;
+    }
+
+    /* ── Platforms ── */
+    .platforms {
+      display: flex; gap: 5px; flex-wrap: wrap;
+      margin-bottom: 11px;
+    }
+
+    .chip {
+      display: flex; align-items: center; gap: 5px;
+      background: #16161e; border: 1px solid #ffffff08;
+      border-radius: 20px; padding: 4px 10px;
+      font-size: 10px; color: #66667a;
+    }
+
+    .chip-dot { width: 5px; height: 5px; border-radius: 50%; }
+    .yt { background: #ff3e3e; }
+    .tt { background: #00e5e5; }
+    .ig { background: linear-gradient(135deg, #f09433, #dc2743); }
+
+    /* ── Skip button ── */
+    .skip-btn {
+      width: 100%; margin-bottom: 10px;
+      background: #16161e; border: 1px solid #ffffff0c;
+      border-radius: 11px; padding: 10px;
+      color: #66667a; font-size: 11px; font-weight: 500;
+      cursor: pointer; letter-spacing: 0.2px;
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      transition: all .15s;
+    }
+
+    .skip-btn:hover {
+      border-color: #7c3aed66;
+      color: #a78bfa;
+      background: #1e1b30;
+    }
+
+    .skip-btn svg { width: 13px; height: 13px; opacity: .7; }
+
+    /* ── Status ── */
+    .status-bar {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 0 4px;
+      border-top: 1px solid #ffffff06;
+    }
+
+    .s-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: #2a2a3a; flex-shrink: 0;
+      transition: background .3s, box-shadow .3s;
+    }
+
+    .s-dot.live {
+      background: #4ade80;
+      box-shadow: 0 0 7px #4ade8077;
+    }
+
+    .s-text { font-size: 10px; color: #3d3d58; }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-icon">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 4L12 14M12 14L8 10M12 14L16 10" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M12 18L12 20M8 20H16" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
+    </svg>
+  </div>
+  <div class="header-text">
+    <h1>AutoScroller</h1>
+    <p>SHORTS &amp; REELS AUTOPILOT</p>
+  </div>
+</div>
+
+<!-- Body -->
+<div class="body">
+
+  <!-- Power -->
+  <div class="power-row" id="powerRow">
+    <div class="power-info">
+      <div class="label">Auto-przewijanie</div>
+      <div class="sub" id="toggleSub">Wyłączone</div>
+    </div>
+    <label class="pill">
+      <input type="checkbox" id="enabledToggle" />
+      <span class="pill-track"></span>
+      <span class="pill-thumb"></span>
+    </label>
+  </div>
+
+  <!-- Mode -->
+  <div class="label-row">Tryb przejścia</div>
+  <div class="mode-group">
+    <button class="mode-btn active" data-mode="ended">
+      <span class="m-icon">🎬</span>
+      <span class="m-label">Po<br>zakończeniu</span>
+    </button>
+    <button class="mode-btn" data-mode="fixed">
+      <span class="m-icon">⏱</span>
+      <span class="m-label">Co X<br>sekund</span>
+    </button>
+    <button class="mode-btn" data-mode="auto">
+      <span class="m-icon">🤖</span>
+      <span class="m-label">Auto-<br>czas</span>
+    </button>
+  </div>
+
+  <!-- Delay -->
+  <div class="label-row">Opóźnienie / interwał</div>
+  <div class="slider-card">
+    <div class="slider-header">
+      <span class="s-label">Czas przed następną rolką</span>
+      <span class="s-val" id="delayVal">2.0s</span>
+    </div>
+    <input type="range" id="delaySlider" min="0" max="30" step="0.5" value="2" />
+  </div>
+
+  <!-- Platforms -->
+  <div class="label-row">Platformy</div>
+  <div class="platforms">
+    <div class="chip"><span class="chip-dot yt"></span>YouTube Shorts</div>
+    <div class="chip"><span class="chip-dot tt"></span>TikTok</div>
+    <div class="chip"><span class="chip-dot ig"></span>Instagram Reels</div>
+  </div>
+
+  <!-- Skip -->
+  <button class="skip-btn" id="skipBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+      <polygon points="5,4 15,12 5,20" fill="currentColor" stroke="none"/>
+      <line x1="19" y1="4" x2="19" y2="20"/>
+    </svg>
+    Pomiń teraz
+  </button>
+
+  <!-- Status -->
+  <div class="status-bar">
+    <span class="s-dot" id="statusDot"></span>
+    <span class="s-text" id="statusText">Brak aktywnej karty z rolkami</span>
+  </div>
+
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
