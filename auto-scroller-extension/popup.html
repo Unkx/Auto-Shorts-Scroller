@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html>
 <head>
   <meta charset="UTF-8" />
   <title>AutoScroller</title>
@@ -15,7 +15,6 @@
       overflow: hidden;
     }
 
-    /* ── Header ── */
     .header {
       position: relative;
       padding: 18px 16px 14px;
@@ -48,7 +47,6 @@
       font-size: 10px; color: #6b6b8a; margin-top: 1px; letter-spacing: 0.4px;
     }
 
-    /* version chip */
     .header::after {
       content: 'v1.0';
       position: absolute; top: 10px; right: 12px;
@@ -56,10 +54,8 @@
       letter-spacing: 0.5px;
     }
 
-    /* ── Body ── */
     .body { padding: 14px 14px 10px; }
 
-    /* ── Power row ── */
     .power-row {
       display: flex; align-items: center; justify-content: space-between;
       background: #16161e;
@@ -77,8 +73,8 @@
 
     .power-info .label { font-size: 13px; font-weight: 600; }
     .power-info .sub   { font-size: 10px; color: #555570; margin-top: 2px; }
+    .power-row.active .power-info .sub { color: #a78bfa; }
 
-    /* pill toggle */
     .pill { position: relative; width: 46px; height: 26px; cursor: pointer; }
     .pill input { opacity: 0; width: 0; height: 0; }
 
@@ -104,14 +100,12 @@
       box-shadow: 0 1px 8px #7c3aed99;
     }
 
-    /* ── Section label ── */
     .label-row {
       font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
       color: #3d3d58; text-transform: uppercase;
       margin-bottom: 7px; margin-top: 2px;
     }
 
-    /* ── Mode cards ── */
     .mode-group {
       display: grid; grid-template-columns: repeat(3, 1fr);
       gap: 6px; margin-bottom: 12px;
@@ -128,9 +122,7 @@
       transition: all .15s;
     }
 
-    .mode-btn .m-icon {
-      font-size: 16px; line-height: 1;
-    }
+    .mode-btn .m-icon { font-size: 16px; line-height: 1; }
 
     .mode-btn .m-label {
       font-size: 10px; font-weight: 500;
@@ -146,7 +138,6 @@
 
     .mode-btn.active .m-label { color: #c4b5fd; }
 
-    /* ── Slider ── */
     .slider-card {
       background: #16161e;
       border: 1px solid #ffffff08;
@@ -188,7 +179,6 @@
       box-shadow: 0 0 0 5px #7c3aed44;
     }
 
-    /* ── Platforms ── */
     .platforms {
       display: flex; gap: 5px; flex-wrap: wrap;
       margin-bottom: 11px;
@@ -206,7 +196,6 @@
     .tt { background: #00e5e5; }
     .ig { background: linear-gradient(135deg, #f09433, #dc2743); }
 
-    /* ── Skip button ── */
     .skip-btn {
       width: 100%; margin-bottom: 10px;
       background: #16161e; border: 1px solid #ffffff0c;
@@ -225,7 +214,6 @@
 
     .skip-btn svg { width: 13px; height: 13px; opacity: .7; }
 
-    /* ── Status ── */
     .status-bar {
       display: flex; align-items: center; justify-content: center; gap: 6px;
       padding: 8px 0 4px;
@@ -248,7 +236,6 @@
 </head>
 <body>
 
-<!-- Header -->
 <div class="header">
   <div class="header-icon">
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -262,14 +249,12 @@
   </div>
 </div>
 
-<!-- Body -->
 <div class="body">
 
-  <!-- Power -->
   <div class="power-row" id="powerRow">
     <div class="power-info">
-      <div class="label">Auto-przewijanie</div>
-      <div class="sub" id="toggleSub">Wyłączone</div>
+      <div class="label" data-i18n="autoScroll">Auto-scroll</div>
+      <div class="sub" id="toggleSub" data-i18n="disabled">Disabled</div>
     </div>
     <label class="pill">
       <input type="checkbox" id="enabledToggle" />
@@ -278,58 +263,54 @@
     </label>
   </div>
 
-  <!-- Mode -->
-  <div class="label-row">Tryb przejścia</div>
+  <div class="label-row" data-i18n="modeTitle">Scroll mode</div>
   <div class="mode-group">
     <button class="mode-btn active" data-mode="ended">
       <span class="m-icon">🎬</span>
-      <span class="m-label">Po<br>zakończeniu</span>
+      <span class="m-label" data-i18n-html="modeEnded">After<br>video ends</span>
     </button>
     <button class="mode-btn" data-mode="fixed">
       <span class="m-icon">⏱</span>
-      <span class="m-label">Co X<br>sekund</span>
+      <span class="m-label" data-i18n-html="modeFixed">Every X<br>seconds</span>
     </button>
     <button class="mode-btn" data-mode="auto">
       <span class="m-icon">🤖</span>
-      <span class="m-label">Auto-<br>czas</span>
+      <span class="m-label" data-i18n-html="modeAuto">Auto-<br>timed</span>
     </button>
   </div>
 
-  <!-- Delay -->
-  <div class="label-row">Opóźnienie / interwał</div>
+  <div class="label-row" data-i18n="delayTitle">Delay / interval</div>
   <div class="slider-card">
     <div class="slider-header">
-      <span class="s-label">Czas przed następną rolką</span>
+      <span class="s-label" data-i18n="delayLabel">Time before next video</span>
       <span class="s-val" id="delayVal">2.0s</span>
     </div>
     <input type="range" id="delaySlider" min="0" max="30" step="0.5" value="2" />
   </div>
 
-  <!-- Platforms -->
-  <div class="label-row">Platformy</div>
+  <div class="label-row" data-i18n="platformsTitle">Platforms</div>
   <div class="platforms">
     <div class="chip"><span class="chip-dot yt"></span>YouTube Shorts</div>
     <div class="chip"><span class="chip-dot tt"></span>TikTok</div>
     <div class="chip"><span class="chip-dot ig"></span>Instagram Reels</div>
   </div>
 
-  <!-- Skip -->
   <button class="skip-btn" id="skipBtn">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
       <polygon points="5,4 15,12 5,20" fill="currentColor" stroke="none"/>
       <line x1="19" y1="4" x2="19" y2="20"/>
     </svg>
-    Pomiń teraz
+    <span data-i18n="skipBtn">Skip now</span>
   </button>
 
-  <!-- Status -->
   <div class="status-bar">
     <span class="s-dot" id="statusDot"></span>
-    <span class="s-text" id="statusText">Brak aktywnej karty z rolkami</span>
+    <span class="s-text" id="statusText" data-i18n="statusNone">No active short-form video tab</span>
   </div>
 
 </div>
 
+<script src="i18n.js"></script>
 <script src="popup.js"></script>
 </body>
 </html>

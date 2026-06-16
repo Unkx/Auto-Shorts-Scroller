@@ -24,7 +24,7 @@
 
   function applySettings() {
     enabledToggle.checked = settings.enabled;
-    toggleSub.textContent = settings.enabled ? 'Włączone' : 'Wyłączone';
+    toggleSub.textContent = t(settings.enabled ? 'enabled' : 'disabled');
     powerRow.classList.toggle('active', settings.enabled);
     delaySlider.value = settings.delay;
     delayVal.textContent = fmt(settings.delay);
@@ -42,10 +42,12 @@
 
       if (isShorts || isTiktok || isReels) {
         const name = isShorts ? 'YouTube Shorts' : isTiktok ? 'TikTok' : 'Instagram Reels';
-        statusText.textContent = settings.enabled ? `Aktywne na ${name}` : 'Gotowe — włącz powyżej';
+        statusText.textContent = settings.enabled
+          ? t('statusActive', { name })
+          : t('statusReady');
         statusDot.className = 's-dot' + (settings.enabled ? ' live' : '');
       } else {
-        statusText.textContent = 'Brak aktywnej karty z rolkami';
+        statusText.textContent = t('statusNone');
         statusDot.className = 's-dot';
       }
     });
@@ -53,7 +55,7 @@
 
   enabledToggle.addEventListener('change', () => {
     settings.enabled = enabledToggle.checked;
-    toggleSub.textContent = settings.enabled ? 'Włączone' : 'Wyłączone';
+    toggleSub.textContent = t(settings.enabled ? 'enabled' : 'disabled');
     powerRow.classList.toggle('active', settings.enabled);
     updateStatus();
     saveAndBroadcast();
@@ -81,6 +83,9 @@
       }
     });
   });
+
+  // Apply static translations first, then load settings
+  applyTranslations();
 
   chrome.storage.sync.get({ enabled: false, mode: 'ended', delay: 2 }, (stored) => {
     settings = stored;
